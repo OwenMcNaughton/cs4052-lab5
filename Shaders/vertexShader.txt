@@ -1,0 +1,32 @@
+#version 330 core
+
+layout(location = 0) in vec3 vertpos;
+layout(location = 1) in vec2 vertuv;
+layout(location = 2) in vec3 vertnorm;
+
+out vec2 uv;
+out vec3 pos;
+out vec3 norm;
+out vec3 eye;
+out vec3 light_dir;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 proj;
+uniform vec3 light_pos;
+
+void main(){
+	gl_Position = proj * view * model * vec4(vertpos,1);
+
+	pos = (model * vec4(vertpos,1)).xyz;
+
+	vec3 vertexPosition_cameraspace = (view * model * vec4(vertpos,1)).xyz;
+	eye = vec3(0,0,0) - vertexPosition_cameraspace;
+
+	vec3 LightPosition_cameraspace = (view * vec4(light_pos, 1)).xyz;
+	light_dir = LightPosition_cameraspace + eye;
+
+	norm = (view * model * vec4(vertnorm,0)).xyz;
+
+	uv = vertuv;
+}

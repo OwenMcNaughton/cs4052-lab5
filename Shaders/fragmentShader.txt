@@ -1,0 +1,33 @@
+#version 330 core
+
+in vec2 uv;
+in vec3 pos;
+in vec3 norm;
+in vec3 eye;
+in vec3 light_dir;
+
+out vec4 frag;
+
+uniform sampler2D sampler;
+uniform vec3 light_pos;
+uniform float alpha;
+
+void main() {
+  vec3 specular = vec3(0.3, 0.3, 0.3) * 1000;
+  vec3 diffuse = texture(sampler, uv).rgb * 1000;
+  vec3 ambient = vec3(0.1, 0.1, 0.1) * diffuse / 1000;
+
+  float dist = length(light_pos - pos);
+
+  vec3 norm_norm = normalize(norm);
+  vec3 norm_light = normalize(light_dir);
+  float clamp_spec = pow(clamp(dot(norm_norm, norm_light), 0, 1), 4);
+
+  vec3 norm_eye = normalize(eye);
+  vec3 reflection = reflect(-norm_light, norm_norm);
+  float clamp_diff = clamp(dot(norm_eye, reflection), 0, 1);
+	float d2 = dist * dist;
+
+  frag.rgb = specular * clamp_spec / d2 + ambient + diffuse * clamp_diff / d2;
+  frag.a = alpha;
+}
