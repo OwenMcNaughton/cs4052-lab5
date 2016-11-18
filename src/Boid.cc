@@ -57,7 +57,7 @@ Boid::Boid(const mat4& mat, int type)
   decompose(mat_, scale, ori, pos_, skew, persp);
 
   if (type == kRabbit) {
-    AnimatedModel rabbit_run(rabbit_run_models, "rabbit", mat, running_ticks);
+    AnimatedModel rabbit_run(rabbit_run_models, "rabbit", mat, running_ticks, true);
     models_.emplace("run", rabbit_run);
   }
 
@@ -151,7 +151,7 @@ void Boid::Flock(
     vel_ = vec3(0.0f);
   }
   vel_.y = 0;
-  pos_ += vel_;
+  // pos_ += vel_;
 }
 
 vec3 Boid::Separation(const vector<Boid>& others, float min_dist) {

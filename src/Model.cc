@@ -4,15 +4,23 @@
 #include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
-Model::Model(const string& mesh, const string& texture, const mat4& mat) {
+Model::Model(
+  const string& mesh,
+  const string& texture,
+  const mat4& mat,
+  bool advanced_render
+) {
   vert_buffer_ = Assets::A().GetVertBuffer(mesh);
   uv_buffer_ = Assets::A().GetUVBuffer(mesh);
   norm_buffer_ = Assets::A().GetNormBuffer(mesh);
   texture_ = Assets::A().GetTexture(texture);
+  specmap_ = Assets::A().GetTexture(texture + "_spec");
   vert_count_ = Assets::A().GetVertCount(mesh);
   mat_ = mat;
   mesh_ = mesh;
+  advanced_render_ = advanced_render;
 }
 
 void Model::Update(int dt) {
@@ -26,12 +34,22 @@ void Model::Update(int dt) {
 }
 
 void Model::Render(const mat4& root, GLuint shader_program) {
+  if (advanced_render_) {
+    glUniform1i(glGetUniformLocation(shader_program, "advanced"), 1);
+  } else {
+    glUniform1i(glGetUniformLocation(shader_program, "advanced"), 0);
+  }
+
   mat4 local = root * mat_;
   glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE, value_ptr(local));
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texture_);
   glUniform1i(glGetUniformLocation(shader_program, "sampler"), 0);
+
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, specmap_);
+  glUniform1i(glGetUniformLocation(shader_program, "spec_sampler"), 1);
 
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, vert_buffer_);
@@ -60,10 +78,11 @@ AnimatedModel::AnimatedModel(
     const vector<string>& meshes,
     const string& texture,
     const mat4& mat,
-    const vector<int>& tick_counts)
-    : Model("", "", mat), tick_counts_(tick_counts) {
+    const vector<int>& tick_counts,
+    bool advanced_render)
+    : Model("", "", mat, advanced_render), tick_counts_(tick_counts) {
   for (const string& mesh: meshes) {
-    models_.push_back(Model(mesh, texture, mat));
+    models_.push_back(Model(mesh, texture, mat, advanced_render));
   }
   vert_buffer_ = models_[model_idx_].vert_buffer_;
   uv_buffer_ = models_[model_idx_].uv_buffer_;

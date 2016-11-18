@@ -27,14 +27,13 @@ Game::Game(SDL_Window* window) {
 
   mat4 center = translate(mat4(1.0f), rabbit_center_);
 
-  mat4 lower_ground = scale(root_, vec3(30, 3, 30));
-  lower_ground = translate(lower_ground, vec3(0, -.2, 0));
+  mat4 lower_ground = translate(root_, vec3(0, -.2, 0));
   Model ground("ground", "ground", lower_ground);
   other_models_.push_back(ground);
 
   for (int i = 0; i != 300; i++) {
     mat4 mat(1.0f);
-    mat = translate(mat, vec3(0, -0.14, 0));
+    mat = translate(mat, vec3(0, -.1, 0));
     mat = translate(mat, vec3(rand() % 100 - 50.0f, 0.0f, rand() % 100 - 50.0f));
     Boid rabbit(mat, kRabbit);
     rabbits_.push_back(rabbit);
@@ -56,12 +55,12 @@ Game::Game(SDL_Window* window) {
   mat4 mn(1.0f);
   mn = translate(mn, vec3(2, 2.9, 0.1));
   mn = rotate(mn, -0.3f, vec3(1, 0, 0));
-  Model minigun("minigun", "", mn);
+  Model minigun("minigun", "minigun", mn);
   overlay_models_.push_back(minigun);
 
   last_tick_ = SDL_GetTicks();
 
-  light_pos_ = vec3(10, 50, 10);
+  light_pos_ = vec3(0, 50, 0);
 
   root_ = mat4(1.0f);
 
@@ -218,7 +217,7 @@ void Game::Render() {
   PrintText(to_string(living_rabbits) + " rabbits left", 0, 0, 24);
   PrintText(to_string(living_foxes) + " foxes left", 0, 30, 24);
 
-  if (living_foxes == 0 && living_rabbits != 0) {
+  if (living_foxes == 0 && living_rabbits > 20) {
     PrintText("You win!", 200, 400, 40);
     PrintText("Score: " + to_string(living_rabbits) + " rabbits", 60, 200, 40);
   }

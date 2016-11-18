@@ -35,7 +35,9 @@ Assets::Assets() {
   LoadBitmap("assets/trunk.bmp", "trunk");
   LoadBitmap("assets/ground.bmp", "ground");
   LoadBitmap("assets/rabbit.bmp", "rabbit");
+  LoadBitmap("assets/rabbit_spec.bmp", "rabbit_spec");
   LoadBitmap("assets/fox.bmp", "fox");
+  LoadBitmap("assets/minigun.bmp", "minigun");
 
   LoadDDS("assets/holstein.dds", "holstein");
 

@@ -12,7 +12,12 @@ using namespace glm;
 
 class Model {
  public:
-  Model(const string& mesh, const string& texture, const mat4& mat);
+  Model(
+    const string& mesh,
+    const string& texture,
+    const mat4& mat,
+    bool advanced_render = false
+  );
 
   virtual void Update(int dt);
 
@@ -23,13 +28,14 @@ class Model {
   mat4 mat_;
   vector<Model*> children_;
   string mesh_;
-  GLuint vert_buffer_, uv_buffer_, norm_buffer_, texture_;
+  GLuint vert_buffer_, uv_buffer_, norm_buffer_, texture_, specmap_;
   std::function<void(int)> update_func_;
   float sway_ = rand() % 1000;
   float alpha_ = 1.0;
 
  private:
   int vert_count_;
+  bool advanced_render_;
 };
 
 class AnimatedModel : public Model {
@@ -38,7 +44,8 @@ class AnimatedModel : public Model {
     const vector<string>& meshes,
     const string& texture,
     const mat4& mat,
-    const vector<int>& tick_counts);
+    const vector<int>& tick_counts,
+    bool advanced_render = false);
 
   virtual void Update(int dt) override;
 
