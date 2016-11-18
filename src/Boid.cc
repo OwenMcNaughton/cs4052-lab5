@@ -151,7 +151,7 @@ void Boid::Flock(
     vel_ = vec3(0.0f);
   }
   vel_.y = 0;
-  // pos_ += vel_;
+  pos_ += vel_;
 }
 
 vec3 Boid::Separation(const vector<Boid>& others, float min_dist) {
