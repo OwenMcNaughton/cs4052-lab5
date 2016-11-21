@@ -5,6 +5,7 @@
 #include <iostream>
 #include <glm/gtx/matrix_decompose.hpp>
 #include "Text.hh"
+#include "Util.hh"
 
 Game::Game(SDL_Window* window) {
   TextInit("holstein");
@@ -15,7 +16,7 @@ Game::Game(SDL_Window* window) {
   sampler_id_ = glGetUniformLocation(shader_program_, "sampler");
   light_id_ = glGetUniformLocation(shader_program_, "light_pos");
 
-  for (int i = 0; i != 20; i++) {
+  for (int i = 0; i != 20 && Util::mode_ != Util::kBoidsMode; i++) {
     mat4 mat(1.0f);
     Tree* tree = new Tree(mat, 7);
     mat = translate(mat, vec3(rand() % 100 - 50.0f, 0.0f, rand() % 100 - 50.0f));
@@ -31,7 +32,12 @@ Game::Game(SDL_Window* window) {
   Model ground("ground", "ground", lower_ground);
   other_models_.push_back(ground);
 
-  for (int i = 0; i != 300; i++) {
+  mat4 skymat = translate(mat4(1.0f), vec3(0, 5, 0));
+  Model sky("skycube", "skycube", skymat, false, 10.0f);
+  other_models_.push_back(sky);
+
+  Util::rabbit_count_ = Util::mode_ == Util::kBoidsMode ? 500 : 300;
+  for (int i = 0; i != Util::rabbit_count_; i++) {
     mat4 mat(1.0f);
     mat = translate(mat, vec3(0, -.1, 0));
     mat = translate(mat, vec3(rand() % 100 - 50.0f, 0.0f, rand() % 100 - 50.0f));
@@ -121,20 +127,7 @@ void Game::Update() {
 
   cam_.Update(dt);
 
-  const Uint8* state = SDL_GetKeyboardState(NULL);
   float delta = dt / 20.0f;
-  if (state[SDL_SCANCODE_I]) {
-    other_models_[0].mat_ = translate(other_models_[0].mat_, vec3(-delta, 0, 0));
-  }
-  if (state[SDL_SCANCODE_J]) {
-    other_models_[0].mat_ = translate(other_models_[0].mat_, vec3(0, 0, delta));
-  }
-  if (state[SDL_SCANCODE_K]) {
-    other_models_[0].mat_ = translate(other_models_[0].mat_, vec3(delta, 0, 0));
-  }
-  if (state[SDL_SCANCODE_L]) {
-    other_models_[0].mat_ = translate(other_models_[0].mat_, vec3(0, 0, -delta));
-  }
   vec3 scale, skew, pos;
   quat ori;
   vec4 persp;
@@ -189,8 +182,10 @@ void Game::Render() {
     tree->Render(smaller_trees, shader_program_);
   }
 
-  for (Model& other_model_ : other_models_) {
-    other_model_.Render(root_, shader_program_);
+  if (Util::mode_ != Util::kBoidsMode) {
+    for (Model& other_model_ : other_models_) {
+      other_model_.Render(root_, shader_program_);
+    }
   }
 
   int living_rabbits = 0;

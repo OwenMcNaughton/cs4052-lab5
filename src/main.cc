@@ -42,8 +42,13 @@ SDL_Window* WindowInit() {
 int main (int argc, char** argv) {
   SDL_Window* window = WindowInit();
 
-  Game game(window);
+  if (argc > 1) {
+    Util::mode_ = atoi(argv[1]);
+  } else {
+    Util::mode_ = Util::kNormalMode;
+  }
 
+  Game game(window);
   game.Start();
 
   SDL_Quit();

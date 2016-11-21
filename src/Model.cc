@@ -10,7 +10,8 @@ Model::Model(
   const string& mesh,
   const string& texture,
   const mat4& mat,
-  bool advanced_render
+  bool advanced_render,
+  float emit
 ) {
   vert_buffer_ = Assets::A().GetVertBuffer(mesh);
   uv_buffer_ = Assets::A().GetUVBuffer(mesh);
@@ -21,6 +22,7 @@ Model::Model(
   mat_ = mat;
   mesh_ = mesh;
   advanced_render_ = advanced_render;
+  emit_ = emit;
 }
 
 void Model::Update(int dt) {
@@ -39,6 +41,8 @@ void Model::Render(const mat4& root, GLuint shader_program) {
   } else {
     glUniform1i(glGetUniformLocation(shader_program, "advanced"), 0);
   }
+
+  glUniform1f(glGetUniformLocation(shader_program, "emit"), emit_);
 
   mat4 local = root * mat_;
   glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE, value_ptr(local));

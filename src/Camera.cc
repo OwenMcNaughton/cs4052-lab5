@@ -12,6 +12,17 @@ using namespace std;
 Camera::Camera() {
   proj_ = perspective(
     45.0f, Util::U().GetWidth() / (float)Util::U().GetHeight(), 0.01f, 10000.0f);
+
+  switch (Util::mode_) {
+    case Util::kNormalMode:
+      heading_ = vec3(0, 0, 1);
+      position_ = vec3(2, 3, 0);
+      break;
+    case Util::kBoidsMode:
+      heading_ = vec3(0.000300482, -1.41443, -0.000270552);
+      position_ = vec3(2, 100, 0);
+      break;
+  }
 }
 
 const mat4 Camera::GetView() {
@@ -48,7 +59,13 @@ void Camera::Update(int dt) {
   if (y == Util::U().GetHeight() - 1) {
     dy = dt / -1200.0f;
   }
-  Rotate(dx, dy);
+
+  switch (Util::mode_) {
+    case Util::kNormalMode:
+      Rotate(dx, dy);
+      break;
+  }
+
   lastx_ = x;
   lasty_ = y;
 
@@ -74,7 +91,11 @@ void Camera::Update(int dt) {
     Translate(0, 0, -delta);
   }
 
-  position_.y = 3;
+  switch (Util::mode_) {
+    case Util::kNormalMode:
+      position_.y = 3;
+      break;
+  }
 }
 
 void Camera::Rotate(float dx, float dy) {

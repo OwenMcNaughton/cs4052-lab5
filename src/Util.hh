@@ -12,6 +12,10 @@ class Util {
 
   int GetWidth();
   int GetHeight();
+
+  static int mode_;
+  static int rabbit_count_;
+  static const int kNormalMode = 0, kBoidsMode = 1;
 };
 
 #endif

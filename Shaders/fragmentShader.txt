@@ -13,6 +13,7 @@ uniform sampler2D spec_sampler;
 uniform vec3 light_pos;
 uniform float alpha;
 uniform int advanced;
+uniform float emit;
 
 void main() {
   vec3 specular = vec3(1.0f);
@@ -23,7 +24,7 @@ void main() {
   }
 
   vec3 diffuse = texture(sampler, uv).rgb * 1000;
-  vec3 ambient = vec3(0.05, 0.05, 0.05) * diffuse / 1000;
+  vec3 ambient = vec3(0.05, 0.05, 0.05) * diffuse / 1000 * emit;
 
   float dist = length(light_pos - pos);
 

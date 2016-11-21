@@ -3,10 +3,11 @@
 #include <cmath>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <iostream>
+#include "Util.hh"
 
 float kSepDist = 1.0f;
 float kPredatorSepDist = 3.0f;
-float kCohDist = 4.0f;
+float kCohDist = 2.0f;
 float kAliDist = 5.0f;
 float kObsDist = 2.0f;
 float kKillDist = 2.5f;
@@ -71,7 +72,11 @@ vec3 Boid::Seek(const vec3& vec) {
   vec3 result = vec;
   result -= pos_;
   result -= vel_;
-  Limit(result, type_ == kFox ? kMaxForce * 10 : kMaxForce);
+  if (Util::mode_ == Util::kBoidsMode) {
+    Limit(result, kMaxForce);
+  } else {
+    Limit(result, type_ == kFox ? kMaxForce * 10 : kMaxForce);
+  }
   return result;
 }
 
@@ -131,7 +136,7 @@ void Boid::Flock(
 
   acc += Separation(predators, kPredatorSepDist) * kPredatorSepFac;
 
-  acc += Cohesion(prey, kCohDist) * kCohFac;
+  acc += Cohesion(prey, type_ == kRabbit ? kCohDist : kCohDist * 3) * kCohFac;
 
   acc += type_ == kRabbit
     ? Alignment(prey) * kAliFac
@@ -139,16 +144,20 @@ void Boid::Flock(
 
   acc += Obstacles(obstacles);
 
-  acc += Seek(center) * (type_ == kRabbit ? kCenFac * sqrt(float(301 - prey.size())) : kCenFac);
 
-  if (type_ == kFox) {
-    acc *= sqrt(sqrt(sqrt(float(301 - prey.size()))));
+  acc += Seek(center) * (type_ == kRabbit && Util::mode_ != Util::kBoidsMode
+      ? kCenFac * sqrt(float(Util::rabbit_count_ + 1 - prey.size()))
+      : kCenFac);
+
+  if (type_ == kFox && Util::mode_ != Util::kBoidsMode) {
+    acc *= sqrt(sqrt(sqrt(float(Util::rabbit_count_ + 1 - prey.size()))));
   }
 
-  vel_ += acc;
-  Limit(vel_, type_ == kFox ? kMaxSpeed * 3 : kMaxSpeed);
-  if (length(vel_) > 2) {
-    vel_ = vec3(0.0f);
+  vel_ += acc * (dt / 10.0f);
+  if (Util::mode_ == Util::kBoidsMode) {
+    Limit(vel_, kMaxSpeed);
+  } else {
+    Limit(vel_, type_ == kFox ? kMaxSpeed * 3 : kMaxSpeed);
   }
   vel_.y = 0;
   pos_ += vel_;
@@ -170,9 +179,9 @@ vec3 Boid::Separation(const vector<Boid>& others, float min_dist) {
       count++;
     }
 
-    if (dist < kKillDist && other.type_ == kFox && type_ != kFox) {
+    if (dist < kKillDist && other.type_ == kFox && type_ != kFox &&
+        Util::mode_ != Util::kBoidsMode) {
       death_timer_--;
-
     }
   }
 

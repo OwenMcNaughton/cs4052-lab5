@@ -16,7 +16,8 @@ class Model {
     const string& mesh,
     const string& texture,
     const mat4& mat,
-    bool advanced_render = false
+    bool advanced_render = false,
+    float emit = 1.0f
   );
 
   virtual void Update(int dt);
@@ -33,6 +34,7 @@ class Model {
   float sway_ = rand() % 1000;
   float alpha_ = 1.0;
 
+  float emit_;
  private:
   int vert_count_;
   bool advanced_render_;

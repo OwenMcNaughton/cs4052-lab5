@@ -1,3 +1,6 @@
+#ifndef CAMERA_HH
+#define CAMERA_HH
+
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include "Model.hh"
@@ -21,8 +24,10 @@ class Camera {
 
  private:
   mat4 proj_;
-  vec3 heading_ = vec3(0, 0, 1);
-  vec3 position_ = vec3(2, 100, 0);
+  vec3 heading_;
+  vec3 position_;
   vec3 up_ = vec3(0, 1.0f, 0);
   int lastx_ = 0, lasty_ = 0;
 };
+
+#endif

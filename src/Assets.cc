@@ -31,6 +31,9 @@ Assets::Assets() {
   LoadObjFile("assets/minigun.obj", "minigun");
   LoadObjFile("assets/reticule.obj", "reticule");
 
+  LoadObjFile("assets/skycube.obj", "skycube");
+  LoadBitmap("assets/skycube.bmp", "skycube");
+
   LoadBitmap("assets/leaves256.bmp", "leaves256");
   LoadBitmap("assets/trunk.bmp", "trunk");
   LoadBitmap("assets/ground.bmp", "ground");
