@@ -15,7 +15,7 @@ class Util {
 
   static int mode_;
   static int rabbit_count_;
-  static const int kNormalMode = 0, kBoidsMode = 1;
+  static const int kNormalMode = 0, kBoidsMode = 1, kInspectMode = 2;
 };
 
 #endif

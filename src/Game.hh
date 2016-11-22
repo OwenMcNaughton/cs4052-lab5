@@ -36,6 +36,8 @@ class Game {
   vec3 light_pos_;
   mat4 root_;
   vec3 rabbit_center_;
+
+  float spec_fac_ = 1.0f, ambi_fac_ = 1.0f, diff_fac_ = 1.0f;
 };
 
 #endif

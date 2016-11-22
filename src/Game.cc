@@ -16,12 +16,14 @@ Game::Game(SDL_Window* window) {
   sampler_id_ = glGetUniformLocation(shader_program_, "sampler");
   light_id_ = glGetUniformLocation(shader_program_, "light_pos");
 
-  for (int i = 0; i != 20 && Util::mode_ != Util::kBoidsMode; i++) {
-    mat4 mat(1.0f);
-    Tree* tree = new Tree(mat, 7);
-    mat = translate(mat, vec3(rand() % 100 - 50.0f, 0.0f, rand() % 100 - 50.0f));
-    tree->mat_ = mat;
-    forest_.push_back(tree);
+  if (Util::mode_ != Util::kBoidsMode) {
+    for (int i = 0; i != 20; i++) {
+      mat4 mat(1.0f);
+      Tree* tree = new Tree(mat, 7);
+      mat = translate(mat, vec3(rand() % 150 - 75.0f, 0.0f, rand() % 150 - 75.0f));
+      tree->mat_ = mat;
+      forest_.push_back(tree);
+    }
   }
 
   rabbit_center_ = vec3(0, 0, 0);
@@ -39,7 +41,11 @@ Game::Game(SDL_Window* window) {
   Util::rabbit_count_ = Util::mode_ == Util::kBoidsMode ? 500 : 300;
   for (int i = 0; i != Util::rabbit_count_; i++) {
     mat4 mat(1.0f);
-    mat = translate(mat, vec3(0, -.1, 0));
+    if (Util::mode_ == Util::kInspectMode) {
+      mat = translate(mat, vec3(0, 1.8, 0));
+    } else {
+      mat = translate(mat, vec3(0, -0.1, 0));
+    }
     mat = translate(mat, vec3(rand() % 100 - 50.0f, 0.0f, rand() % 100 - 50.0f));
     Boid rabbit(mat, kRabbit);
     rabbits_.push_back(rabbit);
@@ -53,16 +59,18 @@ Game::Game(SDL_Window* window) {
     foxes_.push_back(fox);
   }
 
-  mat4 mm(1.0f);
-  mm = translate(mm, vec3(2, 3, 0.2));
-  Model reticule("reticule", "", mm);
-  overlay_models_.push_back(reticule);
+  if (Util::mode_ == Util::kNormalMode) {
+    mat4 mm(1.0f);
+    mm = translate(mm, vec3(2, 3, 0.2));
+    Model reticule("reticule", "", mm);
+    overlay_models_.push_back(reticule);
 
-  mat4 mn(1.0f);
-  mn = translate(mn, vec3(2, 2.9, 0.1));
-  mn = rotate(mn, -0.3f, vec3(1, 0, 0));
-  Model minigun("minigun", "minigun", mn);
-  overlay_models_.push_back(minigun);
+    mat4 mn(1.0f);
+    mn = translate(mn, vec3(2, 2.9, 0.1));
+    mn = rotate(mn, -0.3f, vec3(1, 0, 0));
+    Model minigun("minigun", "minigun", mn);
+    overlay_models_.push_back(minigun);
+  }
 
   last_tick_ = SDL_GetTicks();
 
@@ -145,18 +153,54 @@ void Game::Update() {
     tree_positions.push_back(pos);
   }
 
-  for (int i = 0; i != rabbits_.size(); i++) {
-    bool killed = rabbits_[i].Update(dt);
-    if (killed) {
-      rabbits_.erase(rabbits_.begin() + i--);
+
+  if (Util::mode_ != Util::kInspectMode) {
+    for (int i = 0; i != rabbits_.size(); i++) {
+      bool killed = rabbits_[i].Update(dt);
+      if (killed) {
+        rabbits_.erase(rabbits_.begin() + i--);
+      }
+      rabbits_[i].Flock(dt, rabbits_, foxes_, tree_positions, rabbit_center_);
     }
 
-    rabbits_[i].Flock(dt, rabbits_, foxes_, tree_positions, rabbit_center_);
-  }
+    for (Boid& fox : foxes_) {
+      fox.Update(dt);
+      fox.Flock(dt, rabbits_, foxes_, tree_positions, rabbit_center_);
+    }
+  } else {
+    const Uint8* state = SDL_GetKeyboardState(NULL);
+    float delta = 0;
+    if (state[SDL_SCANCODE_UP]) {
+      delta = dt / 1000.0f;
+    }
+    if (state[SDL_SCANCODE_DOWN]) {
+      delta = -dt / 1000.0f;
+    }
+    if (state[SDL_SCANCODE_X]) {
+      for (int i = 0; i != rabbits_.size(); i++) {
+        rabbits_[i].rot_[0] += delta;
+      }
+    }
+    if (state[SDL_SCANCODE_Y]) {
+      for (int i = 0; i != rabbits_.size(); i++) {
+        rabbits_[i].rot_[1] += delta;
+      }
+    }
+    if (state[SDL_SCANCODE_Z]) {
+      for (int i = 0; i != rabbits_.size(); i++) {
+        rabbits_[i].rot_[2] += delta;
+      }
+    }
+    if (state[SDL_SCANCODE_P]) {
+      spec_fac_ += delta;
+    }
+    if (state[SDL_SCANCODE_U]) {
+      diff_fac_ += delta;
+    }
+    if (state[SDL_SCANCODE_B]) {
+      ambi_fac_ += delta;
+    }
 
-  for (Boid& fox : foxes_) {
-    fox.Update(dt);
-    fox.Flock(dt, rabbits_, foxes_, tree_positions, rabbit_center_);
   }
 
   SDL_PumpEvents();
@@ -176,6 +220,10 @@ void Game::Render() {
   glUniformMatrix4fv(proj_id_, 1, GL_FALSE, value_ptr(cam_.GetProj()));
 
   glUniform3f(light_id_, light_pos_.x, light_pos_.y, light_pos_.z);
+
+  glUniform1f(glGetUniformLocation(shader_program_, "spec_fac"), spec_fac_);
+  glUniform1f(glGetUniformLocation(shader_program_, "diff_fac"), diff_fac_);
+  glUniform1f(glGetUniformLocation(shader_program_, "ambi_fac"), ambi_fac_);
 
   mat4 smaller_trees = translate(root_, vec3(0, 3, 0));
   for (Tree* tree: forest_) {
@@ -209,16 +257,24 @@ void Game::Render() {
     overlay_model.Render(root_, shader_program_);
   }
 
-  PrintText(to_string(living_rabbits) + " rabbits left", 0, 0, 24);
-  PrintText(to_string(living_foxes) + " foxes left", 0, 30, 24);
 
-  if (living_foxes == 0 && living_rabbits > 20) {
-    PrintText("You win!", 200, 400, 40);
-    PrintText("Score: " + to_string(living_rabbits) + " rabbits", 60, 200, 40);
+  if (Util::mode_ == Util::kNormalMode) {
+    PrintText(to_string(living_rabbits) + " rabbits left", 0, 0, 24);
+    PrintText(to_string(living_foxes) + " foxes left", 0, 30, 24);
+
+    if (living_foxes == 0 && living_rabbits > 20) {
+      PrintText("You win!", 200, 400, 40);
+      PrintText("Score: " + to_string(living_rabbits) + " rabbits", 60, 200, 40);
+    }
+
+    if (living_rabbits < 20) {
+      PrintText("You lose!", 200, 400, 40);
+    }
   }
-
-  if (living_rabbits < 20) {
-    PrintText("You lose!", 200, 400, 40);
+  if (Util::mode_ == Util::kInspectMode) {
+    PrintText("Diffuse: " + to_string(diff_fac_), 0, 0, 24);
+    PrintText("Specular: " + to_string(spec_fac_), 0, 28, 24);
+    PrintText("Ambient: " + to_string(ambi_fac_), 0, 56, 24);
   }
 
   SDL_GL_SwapWindow(window_);

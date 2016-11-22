@@ -31,7 +31,7 @@ class Boid {
 
   vec3 Seek(const vec3& target);
 
-  vec3 pos_, rot_, vel_;
+  vec3 pos_, rot_ = vec3(0, 0 ,0), vel_;
   int death_timer_ = 100;
   int type_;
  private:

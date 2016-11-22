@@ -15,6 +15,7 @@ Camera::Camera() {
 
   switch (Util::mode_) {
     case Util::kNormalMode:
+    case Util::kInspectMode:
       heading_ = vec3(0, 0, 1);
       position_ = vec3(2, 3, 0);
       break;
@@ -62,6 +63,7 @@ void Camera::Update(int dt) {
 
   switch (Util::mode_) {
     case Util::kNormalMode:
+    case Util::kInspectMode:
       Rotate(dx, dy);
       break;
   }
@@ -70,7 +72,6 @@ void Camera::Update(int dt) {
   lasty_ = y;
 
   const Uint8* state = SDL_GetKeyboardState(NULL);
-
   float delta = dt / 100.0f;
   if (state[SDL_SCANCODE_W]) {
     Translate(delta, 0, 0);

@@ -15,6 +15,10 @@ uniform float alpha;
 uniform int advanced;
 uniform float emit;
 
+uniform float diff_fac;
+uniform float ambi_fac;
+uniform float spec_fac;
+
 void main() {
   vec3 specular = vec3(1.0f);
   if (advanced == 1) {
@@ -37,6 +41,9 @@ void main() {
   float clamp_spec = pow(clamp(dot(norm_eye, reflection), 0, 1), 1);
   float d2 = dist * dist;
 
-  frag.rgb = specular * clamp_spec / d2 + ambient + diffuse * clamp_diff / d2;
+  frag.rgb =
+    (specular * clamp_spec / d2) * spec_fac +
+    ambient * ambi_fac +
+    diffuse * clamp_diff / d2 * diff_fac;
   frag.a = alpha;
 }

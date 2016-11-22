@@ -17,7 +17,7 @@ Tree::Tree(const mat4& mat, int depth)
     sway_ += dt / 2000.0f;
     mat4 ident(1.0f);
     ident = translate(ident, vec3(0, -2.5, 0));
-    ident = rotate(ident, sin(sway_) / 1200.0f, vec3(0, 0, 1));
+    ident = rotate(ident, sin(sway_) / 1000.0f, vec3(0, 0, 1));
     ident = translate(ident, vec3(0, 2.5, 0));
     mat_ = mat_ * ident;
   };
@@ -41,7 +41,7 @@ void Tree::RecurseBuild(const mat4& root_mat, Model* bush, int depth) {
       branch->sway_ += dt / 2000.0f;
       mat4 ident(1.0f);
       ident = translate(ident, vec3(0, -2.5, 0));
-      ident = rotate(ident, sin(branch->sway_) / 1200.0f, vec3(0, 0, 1));
+      ident = rotate(ident, sin(branch->sway_) / 1000.0f, vec3(0, 0, 1));
       ident = translate(ident, vec3(0, 2.5, 0));
       branch->mat_ = branch->mat_ * ident;
     };

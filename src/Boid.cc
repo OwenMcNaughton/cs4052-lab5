@@ -109,6 +109,9 @@ void Boid::Render(const mat4& root, GLuint shader_program) {
     float angle = Angle(vel_.x, vel_.z);
     local = rotate(local, angle, vec3(0, 1, 0));
   }
+  local = rotate(local, rot_[0], vec3(1, 0, 0));
+  local = rotate(local, rot_[1], vec3(0, 1, 0));
+  local = rotate(local, rot_[2], vec3(0, 0, 1));
 
   vec3 scale, skew, pos;
   quat ori;
