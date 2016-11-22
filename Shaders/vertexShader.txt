@@ -11,8 +11,6 @@ out vec3 pos;
 out vec3 norm;
 out vec3 eye;
 out vec3 light_dir;
-out vec3 light_dir_tang;
-out vec3 eye_tang;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -33,13 +31,4 @@ void main(){
 
 	norm = (view * model * vec4(vertnorm, 0)).xyz;
 	uv = vertuv;
-
-	mat3 movelview_t = transpose(mat3(
-		modelview * verttang,
-		modelview * verttang2,
-		modelview * vertnorm
-	));
-
-	light_dir_tang = movelview_t * light_dir;
-	eye_tang =  movelview_t * eye;
 }

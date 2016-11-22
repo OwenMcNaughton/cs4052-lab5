@@ -38,7 +38,7 @@ void main() {
 
   vec3 norm_eye = normalize(eye);
   vec3 reflection = reflect(-norm_light, norm_norm);
-  float clamp_spec = pow(clamp(dot(norm_eye, reflection), 0, 1), 1);
+  float clamp_spec = pow(clamp(dot(norm_eye, reflection), 0, 1), 3);
   float d2 = dist * dist;
 
   frag.rgb =
